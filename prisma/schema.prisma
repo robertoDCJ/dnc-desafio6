@@ -14,36 +14,34 @@ datasource db {
 }
 
 model Produtos {
-  id      Int @id @default(autoincrement())
-  nome    String
-  preco   Int
-  estoque Estoques[]
-  pedidos Pedidos[]
-}
+  id                Int @id @unique @default(autoincrement())
+  nome              String @unique
+  preco             Int @default(0)
+  pedidos           Pedidos[]
+  }
 
 model Estoques {
-  produto    Produtos @relation(fields: [produto_id], references: [id])
-  produto_id Int @id @unique
-  quantidade Int
+  id                Int @id @unique @default(autoincrement())
+  quantidade        Int? @default(0)
 }
 
 model Clientes {
-  id      Int @id @default(autoincrement())
-  nome    String
-  pedidos Pedidos[]
+  id                Int @id @unique @default(autoincrement())
+  nome              String @unique
+  pedidos           Pedidos[]
 }
 
 model Pedidos {
-  id Int @id @default(autoincrement())
-  produto Produtos @relation(fields: [produtos_id], references: [id])
-  produtos_id Int
-  cliente Clientes @relation(fields: [cliente_id], references: [id])
-  cliente_id Int
-  vendas Vendas[]
+  id                Int @id @unique @default(autoincrement())
+  produto           Produtos @relation(fields: [produtos_id], references: [id])
+  produtos_id       Int
+  cliente           Clientes @relation(fields: [cliente_id], references: [id])
+  cliente_id        Int
+  vendas            Vendas[]
 }
 
 model Vendas {
-  id Int @id @default(autoincrement())
-  pedido Pedidos @relation(fields: [pedido_id], references: [id])
-  pedido_id Int @unique
+  id                Int @id @unique @default(autoincrement())
+  pedido            Pedidos @relation(fields: [pedido_id], references: [id])
+  pedido_id         Int @unique
 }
