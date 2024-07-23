@@ -9,3 +9,6 @@ export * from "./product/updateOneProduct";
 export * from "./stocks/findUniqueStock";
 export * from "./stocks/showStocks";
 export * from "./stocks/updateStockById";
+
+// CLIENTS
+export * from "./clients/postClient";
