@@ -1,5 +1,18 @@
 import { Request, Response } from "express";
-import { findUniqueStock, updateStockById } from "../utils";
+import { findUniqueStock, showStocks, updateStockById } from "../utils";
+
+//
+// ----------------------------- GET ALL STOCK -------------------------------
+//
+
+export const getAllStocks = async (req: Request, res: Response) => {
+  try {
+    const stocks = await showStocks();
+    res.status(200).json(stocks);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
 
 //
 // ----------------------------- GET ONE STOCK -------------------------------

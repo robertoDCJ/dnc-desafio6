@@ -7,4 +7,5 @@ export * from "./product/updateOneProduct";
 
 // STOCKS
 export * from "./stocks/findUniqueStock";
+export * from "./stocks/showStocks";
 export * from "./stocks/updateStockById";
