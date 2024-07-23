@@ -1,51 +1,87 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
-const prisma = new PrismaClient();
+import {
+  deleteOneProduct,
+  findUniqueProduct,
+  postProduct,
+  showProducts,
+  updateOneProduct,
+} from "../utils";
 
 //
 // ----------------------------- CREATE PRODUCTS -------------------------------
 //
 
-async function postProduct(nome: string, preco: number) {
-  await prisma.produtos.create({ data: { nome, preco } });
-  await prisma.estoques.create({ data: {} });
-}
-
 export const createProduct = async (req: Request, res: Response) => {
   const { nome, preco } = req.body;
 
-  await postProduct(nome, preco)
-    .then(async () => {
-      await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-      console.error(e);
-      await prisma.$disconnect();
-      process.exit(1);
-    });
+  try {
+    await postProduct(nome, preco);
 
-  res.status(201).json(`Produto ${nome} criado com sucesso!`);
+    res.status(201).json(`Produto ${nome} criado com sucesso!`);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 //
-// ----------------------------- GET PRODUCTS -------------------------------
+// ----------------------------- GET ALL PRODUCTS -------------------------------
 //
-
-async function showProducts() {
-  const products = await prisma.produtos.findMany();
-  const stocks = await prisma.estoques.findMany();
-
-  const productsWithStock = products.map((product, index) => ({
-    ...product,
-    stock: stocks[index].quantidade,
-  }));
-
-  return productsWithStock;
-}
 
 export const getProducts = async (req: Request, res: Response) => {
   const products = await showProducts();
 
-  res.status(200).json(products);
+  try {
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ----------------------------- GET ONE PRODUCT -------------------------------
+//
+
+export const getOneProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const product = await findUniqueProduct(Number(id));
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ----------------------------- UPDATE PRODUCT -------------------------------
+//
+
+export const updateProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nome, preco } = req.body;
+
+  try {
+    await updateOneProduct(Number(id), nome, preco);
+
+    res.status(200).json(`Produto com id:${id} atualizado com sucesso!`);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ----------------------------- DELETE PRODUCT -------------------------------
+//
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    await deleteOneProduct(Number(id));
+
+    res.status(200).json(`Produto com id:${id} deletado com sucesso!`);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 };
