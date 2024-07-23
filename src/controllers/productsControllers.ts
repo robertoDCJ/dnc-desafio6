@@ -28,10 +28,9 @@ export const createProduct = async (req: Request, res: Response) => {
 //
 
 export const getProducts = async (req: Request, res: Response) => {
-  const products = await showProducts();
-
   try {
-    res.status(200).json(products);
+    const productsList = await showProducts();
+    res.status(200).json(productsList);
   } catch (error) {
     res.status(400).json(error);
   }
@@ -42,14 +41,14 @@ export const getProducts = async (req: Request, res: Response) => {
 //
 
 export const getOneProduct = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { productId } = req.params;
 
   try {
-    const product = await findUniqueProduct(Number(id));
+    const product = await findUniqueProduct(Number(productId));
 
     res.status(200).json(product);
   } catch (error) {
-    res.status(400).json(error);
+    res.status(500).send(error);
   }
 };
 
