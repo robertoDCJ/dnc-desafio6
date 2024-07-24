@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import { postClient } from "../utils";
-import { getClients } from "../utils/clients/getClients";
+import { filterClientByName, getClients, postClient } from "../utils";
 
 //
 // ----------------------------- CREATE CLIENT -------------------------------
@@ -32,5 +31,16 @@ export const getAllClients = async (req: Request, res: Response) => {
 };
 
 //
-// ----------------------------- GET ONE CLIENT -------------------------------
+// -------------------------- FILTER CLIENT BY NAME ----------------------------
 //
+
+export const filterClient = async (req: Request, res: Response) => {
+  const { name } = req.params;
+  try {
+    const client = await filterClientByName(name);
+
+    res.status(200).json(client);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
