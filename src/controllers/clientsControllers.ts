@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { filterClientByName, getClients, postClient } from "../utils";
+import {
+  filterClientByName,
+  getClients,
+  postClient,
+  updateClientById,
+} from "../utils";
 
 //
 // ----------------------------- CREATE CLIENT -------------------------------
@@ -40,6 +45,22 @@ export const filterClient = async (req: Request, res: Response) => {
     const client = await filterClientByName(name);
 
     res.status(200).json(client);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ----------------------------- UPDATE CLIENT -------------------------------
+//
+
+export const updateClient = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nome } = req.body;
+
+  try {
+    await updateClientById(Number(id), nome);
+    res.status(200).json(`Cliente com id:${id} atualizado com sucesso!`);
   } catch (error) {
     res.status(400).json(error);
   }

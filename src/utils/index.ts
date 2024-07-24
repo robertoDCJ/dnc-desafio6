@@ -14,3 +14,4 @@ export * from "./stocks/updateStockById";
 export * from "./clients/filterClientByName";
 export * from "./clients/getClients";
 export * from "./clients/postClient";
+export * from "./clients/updateClientById";
