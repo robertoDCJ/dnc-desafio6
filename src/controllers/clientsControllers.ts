@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {
-  filterClientByName,
+  getClientByNameOrId,
   getClients,
   postClient,
   updateClientById,
@@ -36,16 +36,18 @@ export const getAllClients = async (req: Request, res: Response) => {
 };
 
 //
-// -------------------------- FILTER CLIENT BY NAME ----------------------------
+// -------------------------- GET ONE CLIENT -----------------------------------
 //
 
-export const filterClient = async (req: Request, res: Response) => {
-  const { name } = req.params;
+export const getOneClient = async (req: Request, res: Response) => {
+  const { idOrName } = req.params;
+
   try {
-    const client = await filterClientByName(name);
+    const client = await getClientByNameOrId(idOrName);
 
     res.status(200).json(client);
   } catch (error) {
+    console.log(error);
     res.status(400).json(error);
   }
 };

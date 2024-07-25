@@ -1,8 +1,8 @@
 import { Router } from "express";
 import {
   createClient,
-  filterClient,
   getAllClients,
+  getOneClient,
   updateClient,
 } from "../controllers/clientsControllers";
 
@@ -10,7 +10,7 @@ const router = Router();
 
 router.post("/", createClient);
 router.get("/", getAllClients);
-router.get("/:name", filterClient);
+router.get("/:idOrName", getOneClient);
 router.put("/:id", updateClient);
 
 export default router;
