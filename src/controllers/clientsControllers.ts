@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  deleteClientById,
   getClientByNameOrId,
   getClients,
   postClient,
@@ -63,6 +64,20 @@ export const updateClient = async (req: Request, res: Response) => {
   try {
     await updateClientById(Number(id), nome);
     res.status(200).json(`Cliente com id:${id} atualizado com sucesso!`);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ----------------------------- DELETE CLIENT -------------------------------
+//
+
+export const deleteClient = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    await deleteClientById(id);
+    res.status(200).json(`Cliente com id:${id} deletado com sucesso!`);
   } catch (error) {
     res.status(400).json(error);
   }

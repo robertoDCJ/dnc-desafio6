@@ -11,6 +11,7 @@ export * from "./stocks/showStocks";
 export * from "./stocks/updateStockById";
 
 // CLIENTS
+export * from "./clients/deleteClientById";
 export * from "./clients/getClientByNameOrId";
 export * from "./clients/getClients";
 export * from "./clients/postClient";
