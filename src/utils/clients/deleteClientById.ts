@@ -8,4 +8,6 @@ export const deleteClientById = async (id: string) => {
       id: Number(id),
     },
   });
+
+  await prisma.$disconnect();
 };

@@ -17,27 +17,33 @@ model Produtos {
   id                Int @id @unique @default(autoincrement())
   nome              String @unique
   preco             Int @default(0)
-  pedidos           Pedidos[]
   }
-
-model Estoques {
-  id                Int @id @unique @default(autoincrement())
-  quantidade        Int? @default(0)
-}
 
 model Clientes {
   id                Int @id @unique @default(autoincrement())
   nome              String @unique
   pedidos           Pedidos[]
 }
+model Estoques {
+  id                Int @id @unique @default(autoincrement())
+  quantidade        Int? @default(0)
+  pedidos           PedidosOnEstoques[]
+}
 
 model Pedidos {
   id                Int @id @unique @default(autoincrement())
-  produto           Produtos @relation(fields: [produtos_id], references: [id])
-  produtos_id       Int
+  estoques          PedidosOnEstoques[]
   cliente           Clientes @relation(fields: [cliente_id], references: [id])
   cliente_id        Int
-  vendas            Vendas[]
+  vendas            Vendas?
+}
+
+model PedidosOnEstoques {
+  estoque           Estoques  @relation(fields: [estoque_id], references: [id])
+  estoque_id        Int
+  pedido            Pedidos   @relation(fields: [pedido_id], references: [id])
+  pedido_id         Int
+  @@id([estoque_id, pedido_id])
 }
 
 model Vendas {
