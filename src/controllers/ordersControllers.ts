@@ -1,6 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import { createOrder, findManyProducts, getClientByNameOrId } from "../utils";
+import {
+  createOrder,
+  findManyOrders,
+  findManyProducts,
+  getClientByNameOrId,
+} from "../utils";
 
 const prisma = new PrismaClient();
 
@@ -18,19 +23,46 @@ export const postOrder = async (req: Request, res: Response) => {
       products_id: Array<{ id: number; quantidade: number }>;
     } = req.body;
 
-    const products = await findManyProducts(products_id);
-
-    const client = await getClientByNameOrId(client_id.toString());
-
-    if (!products || !client) {
-      return res.status(400).json("Produtos ou cliente não encontrado");
-    }
+    const [products, client] = await Promise.all(
+      await [
+        findManyProducts(products_id),
+        getClientByNameOrId(client_id.toString()),
+      ]
+    );
 
     if (products && client) {
       await createOrder(client_id, products_id);
     }
 
     res.status(201).json("Pedido criado com sucesso!");
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ---------------- GET ALL ORDERS ----------------
+//
+
+export const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const orders: Array<{ id: number; cliente_id: number }> =
+      await findManyOrders();
+
+    const getItensOfOrders = await Promise.all(
+      orders.map(async (order) => {
+        return await prisma.pedidosOnEstoques.findMany({
+          where: {
+            pedido_id: order.id,
+          },
+          orderBy: {
+            pedido_id: "asc",
+          },
+        });
+      })
+    );
+
+    res.status(200).json(getItensOfOrders);
   } catch (error) {
     res.status(400).json(error);
   }

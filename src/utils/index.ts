@@ -20,3 +20,4 @@ export * from "./clients/updateClientById";
 
 // ORDERS
 export * from "./orders/createOrder";
+export * from "./orders/findManyOrders";
