@@ -43,6 +43,7 @@ model PedidosOnEstoques {
   estoque_id        Int
   pedido            Pedidos   @relation(fields: [pedido_id], references: [id])
   pedido_id         Int
+  quantidade        Int
   @@id([estoque_id, pedido_id])
 }
 

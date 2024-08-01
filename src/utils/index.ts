@@ -16,3 +16,6 @@ export * from "./clients/getClientByNameOrId";
 export * from "./clients/getClients";
 export * from "./clients/postClient";
 export * from "./clients/updateClientById";
+
+// ORDERS
+export * from "./orders/createOrder";
