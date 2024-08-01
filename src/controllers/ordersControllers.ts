@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import { createOrder, getClientByNameOrId } from "../utils";
+import { createOrder, findManyProducts, getClientByNameOrId } from "../utils";
 
 const prisma = new PrismaClient();
 
@@ -18,15 +18,7 @@ export const postOrder = async (req: Request, res: Response) => {
       products_id: Array<{ id: number; quantidade: number }>;
     } = req.body;
 
-    // TODO: Do a function to get products by id
-    const products: Array<{ id: number; nome: string; preco: number }> =
-      await prisma.produtos.findMany({
-        where: {
-          id: {
-            in: products_id.map(({ id }) => id),
-          },
-        },
-      });
+    const products = await findManyProducts(products_id);
 
     const client = await getClientByNameOrId(client_id.toString());
 

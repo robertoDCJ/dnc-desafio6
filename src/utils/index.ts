@@ -1,5 +1,6 @@
 // PRODUCTS
 export * from "./product/deleteOneProduct";
+export * from "./product/findManyProducts";
 export * from "./product/findUniqueProduct";
 export * from "./product/postProduct";
 export * from "./product/showProducts";
