@@ -4,7 +4,9 @@ import {
   findAllOrdersOnStocks,
   findAllProducts,
   findManyOrders,
+  findManyOrdersOnStocks,
   findManyProducts,
+  findOrderById,
   getClientByNameOrId,
   getClients,
 } from "../utils";
@@ -46,32 +48,6 @@ export const postOrder = async (req: Request, res: Response) => {
 
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    class Order {
-      id: number;
-      client: { id: number; nome: string };
-      products: Array<{
-        id: number;
-        name: string;
-        preco: number;
-        quantity: number;
-      }>;
-
-      constructor(
-        id: number,
-        client: { id: number; nome: string },
-        products: Array<{
-          id: number;
-          name: string;
-          preco: number;
-          quantity: number;
-        }>
-      ) {
-        this.id = id;
-        this.client = client;
-        this.products = products;
-      }
-    }
-
     const [orders, ordersOnStocks, clients, products] = await Promise.all([
       findManyOrders(),
       findAllOrdersOnStocks(),
@@ -107,13 +83,71 @@ export const getAllOrders = async (req: Request, res: Response) => {
             })
             .filter((product) => product !== null);
 
-          return new Order(order.id, client, productWithQuantity);
+          return {
+            id: order.id,
+            client: client,
+            products: productWithQuantity,
+          };
         }
         return null;
       })
       .filter((product) => product !== null);
 
     res.status(200).json(allOrders);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ---------------- GET ONE ORDER ----------------
+//
+
+export const getOneOrder = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await findOrderById(Number(orderId));
+    if (order) {
+      const [client, orderOnStock] = await Promise.all([
+        getClientByNameOrId(order.cliente_id.toString()),
+        findManyOrdersOnStocks([order]),
+      ]);
+      if (client && orderOnStock) {
+        const productsId = orderOnStock
+          .flat()
+          .map((item) => ({ id: item.estoque_id }));
+        const products = await findManyProducts(productsId);
+
+        const productMap = new Map(
+          products.map((product) => [product.id, product])
+        );
+        const productWithQuantity = orderOnStock
+          .flat()
+          .map((item) => {
+            const product = productMap.get(item.estoque_id);
+            if (product) {
+              return {
+                id: product.id,
+                name: product.nome,
+                preco: product.preco,
+                quantity: item.quantidade,
+              };
+            }
+            return null;
+          })
+          .filter((product) => product !== null);
+
+        const orderResult = {
+          id: order.id,
+          client: client[0],
+          products: productWithQuantity,
+        };
+
+        return res.status(200).json(orderResult);
+      }
+    }
+    res.status(200).json(order);
   } catch (error) {
     res.status(400).json(error);
   }

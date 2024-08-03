@@ -11,6 +11,7 @@ export const findOrderById = async (id: number) => {
     //   estoques: true,
     // },
   });
+
   await prisma.$disconnect();
   return order;
 };
