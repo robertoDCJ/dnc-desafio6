@@ -1,5 +1,6 @@
 // PRODUCTS
 export * from "./product/deleteOneProduct";
+export * from "./product/findAllProducts";
 export * from "./product/findManyProducts";
 export * from "./product/findUniqueProduct";
 export * from "./product/postProduct";
@@ -21,6 +22,7 @@ export * from "./clients/updateClientById";
 // ORDERS
 export * from "./orders/createOrder";
 export * from "./orders/findManyOrders";
+export * from "./orders/findOrderById";
 
 // ORDERS ON STOCKS
 export * from "./ordersOnStoks/findManyOrdersOnStocks";
