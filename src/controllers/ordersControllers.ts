@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import {
   createOrder,
+  findAllOrdersOnStocks,
+  findAllProducts,
   findManyOrders,
-  findManyOrdersOnStocks,
   findManyProducts,
   getClientByNameOrId,
   getClients,
@@ -71,54 +72,46 @@ export const getAllOrders = async (req: Request, res: Response) => {
       }
     }
 
-    const orders: Array<{ id: number; cliente_id: number }> =
-      await findManyOrders();
+    const [orders, ordersOnStocks, clients, products] = await Promise.all([
+      findManyOrders(),
+      findAllOrdersOnStocks(),
+      getClients(),
+      findAllProducts(),
+    ]);
 
-    const getItensOfOrders: Array<
-      Array<{
-        estoque_id: number;
-        pedido_id: number;
-        quantidade: number;
-      }>
-    > = await findManyOrdersOnStocks(orders);
+    const clientMap = new Map(clients.map((client) => [client.id, client]));
+    const productMap = new Map(
+      products.map((product) => [product.id, product])
+    );
 
-    const clients = await getClients();
+    const allOrders = orders
+      .map((order) => {
+        const itemOfOrder = ordersOnStocks.filter(
+          (item) => item.pedido_id === order.id
+        );
+        const client = clientMap.get(order.cliente_id);
 
-    const allOrders = [];
+        if (client) {
+          const productWithQuantity = itemOfOrder
+            .map((item) => {
+              const product = productMap.get(item.estoque_id);
+              if (product) {
+                return {
+                  id: product.id,
+                  name: product.nome,
+                  preco: product.preco,
+                  quantity: item.quantidade,
+                };
+              }
+              return null;
+            })
+            .filter((product) => product !== null);
 
-    for (let i = 0; i < getItensOfOrders.length; i++) {
-      let allItensOrders = getItensOfOrders[i];
-      let id = allItensOrders[0].pedido_id;
-      let client = clients.find((client) => client.id === id);
-      let productsId = allItensOrders.map((product) => ({
-        id: product.estoque_id,
-      }));
-      let products = await findManyProducts(productsId);
-      let quantity = allItensOrders.map((product) => ({
-        quantity: product.quantidade,
-      }));
-
-      let productsWithQuantity: {
-        id: number;
-        name: string;
-        preco: number;
-        quantity: number;
-      }[] = [];
-
-      for (let j = 0; j < products.length; j++) {
-        productsWithQuantity.push({
-          id: products[j].id,
-          name: products[j].nome,
-          preco: products[j].preco,
-          quantity: quantity[j].quantity,
-        });
-      }
-
-      if (client) {
-        let order = new Order(id, client, productsWithQuantity);
-        allOrders.push(order);
-      }
-    }
+          return new Order(order.id, client, productWithQuantity);
+        }
+        return null;
+      })
+      .filter((product) => product !== null);
 
     res.status(200).json(allOrders);
   } catch (error) {

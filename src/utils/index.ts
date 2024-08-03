@@ -25,4 +25,5 @@ export * from "./orders/findManyOrders";
 export * from "./orders/findOrderById";
 
 // ORDERS ON STOCKS
+export * from "./ordersOnStoks/findAllOrdersOnStocks";
 export * from "./ordersOnStoks/findManyOrdersOnStocks";
