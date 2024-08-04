@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { redisClient } from "../redisConfig";
 import {
@@ -8,6 +9,8 @@ import {
   getClientByNameOrId,
 } from "../utils";
 import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
+
+const prisma = new PrismaClient();
 
 findAndKeepOrders();
 
@@ -78,7 +81,19 @@ export const getOneOrder = async (req: Request, res: Response) => {
   try {
     const jsonOrder = await clientInstance.get("oneOrder");
     if (jsonOrder) {
-      const parseOrder = await JSON.parse(jsonOrder);
+      const parseOrder: {
+        id: number;
+        client: {
+          id: number;
+          nome: string;
+        };
+        products: {
+          id: number;
+          name: string;
+          preco: number;
+          quantity: number;
+        }[];
+      } = await JSON.parse(jsonOrder);
       if (parseOrder.id === Number(orderId)) {
         return res.status(200).json(parseOrder);
       }
@@ -163,3 +178,83 @@ export const deleteOrder = async (req: Request, res: Response) => {
 //
 // ---------------- UPDATE ORDER ----------------
 //
+
+export const updateOrder = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const {
+    client,
+    products,
+  }: {
+    client?: { id: number; nome?: string };
+    products?: {
+      id: number;
+      name?: string;
+      preco?: number;
+      quantity: number;
+    }[];
+  } = req.body;
+  const clientInstance = await redisClient;
+
+  try {
+    const allOrders = await clientInstance.get("allOrders");
+    if (allOrders) {
+      const parseAllOrders: {
+        id: number;
+        client: { id: number; nome: string };
+        products: {
+          id: number;
+          name: string;
+          preco: number;
+          quantity: number;
+        }[];
+      }[] = await JSON.parse(allOrders);
+      const orderMap = new Map(
+        parseAllOrders.map((order) => [order.id, order])
+      );
+      const order = orderMap.get(Number(orderId));
+      if (order) {
+        if (client) {
+          await clientInstance.del(["allOrders", "oneOrder"]);
+          await prisma.pedidos.update({
+            where: {
+              id: Number(orderId),
+            },
+            data: {
+              cliente_id: client.id,
+            },
+          });
+          await findAndKeepOrders();
+          return res.status(201).json("Order updated successfully");
+        }
+
+        if (products) {
+          const [estoqueId, quantity] = await Promise.all([
+            products.map((product) => product.id),
+            products.map((product) => product.quantity),
+          ]);
+
+          await clientInstance.del(["allOrders", "oneOrder"]);
+          await prisma.pedidosOnEstoques.deleteMany({
+            where: {
+              pedido_id: Number(orderId),
+            },
+          });
+          await prisma.pedidosOnEstoques.createMany({
+            data: estoqueId.map((id, index) => ({
+              pedido_id: Number(orderId),
+              estoque_id: id,
+              quantidade: quantity[index],
+            })),
+          });
+
+          await findAndKeepOrders();
+          return res.status(201).json("Order updated successfully");
+        }
+      }
+    }
+
+    res.status(404).json({ message: "Order not found" });
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
