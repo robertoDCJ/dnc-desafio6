@@ -1,14 +1,7 @@
 import { Request, Response } from "express";
 import { createClient } from "redis";
-import {
-  createOrder,
-  findAllOrdersOnStocks,
-  findAllProducts,
-  findManyOrders,
-  findManyProducts,
-  getClientByNameOrId,
-  getClients,
-} from "../utils";
+import { createOrder, findManyProducts, getClientByNameOrId } from "../utils";
+import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
 
 const client = createClient({
   password: "wyCfJNs2GVmPqkjox3qz8bffj2vZZnzE",
@@ -25,6 +18,8 @@ const client = createClient({
 //
 
 export const postOrder = async (req: Request, res: Response) => {
+  const clientInstance = await client;
+
   try {
     const {
       client_id,
@@ -33,6 +28,8 @@ export const postOrder = async (req: Request, res: Response) => {
       client_id: number;
       products_id: Array<{ id: number; quantidade: number }>;
     } = req.body;
+
+    await clientInstance.del("allOrders");
 
     const [products, client] = await Promise.all(
       await [
@@ -43,6 +40,7 @@ export const postOrder = async (req: Request, res: Response) => {
 
     if (products && client) {
       await createOrder(client_id, products_id);
+      await findAndKeepOrders();
     }
 
     res.status(201).json("Pedido criado com sucesso!");
@@ -63,53 +61,9 @@ export const getAllOrders = async (req: Request, res: Response) => {
       return res.status(200).json(JSON.parse(verifyOrders));
     }
 
-    const [orders, ordersOnStocks, clients, products] = await Promise.all([
-      findManyOrders(),
-      findAllOrdersOnStocks(),
-      getClients(),
-      findAllProducts(),
-    ]);
+    const result = await findAndKeepOrders();
 
-    const clientMap = new Map(clients.map((client) => [client.id, client]));
-    const productMap = new Map(
-      products.map((product) => [product.id, product])
-    );
-
-    const allOrders = orders
-      .map((order) => {
-        const itemOfOrder = ordersOnStocks.filter(
-          (item) => item.pedido_id === order.id
-        );
-        const client = clientMap.get(order.cliente_id);
-
-        if (client) {
-          const productWithQuantity = itemOfOrder
-            .map((item) => {
-              const product = productMap.get(item.estoque_id);
-              if (product) {
-                return {
-                  id: product.id,
-                  name: product.nome,
-                  preco: product.preco,
-                  quantity: item.quantidade,
-                };
-              }
-              return null;
-            })
-            .filter((product) => product !== null);
-
-          return {
-            id: order.id,
-            client: client,
-            products: productWithQuantity,
-          };
-        }
-        return null;
-      })
-      .filter((product) => product !== null);
-
-    clientInstance.set("allOrders", JSON.stringify(allOrders));
-    res.status(200).json(allOrders);
+    res.status(200).json(result);
   } catch (error) {
     res.status(400).json(error);
   }
