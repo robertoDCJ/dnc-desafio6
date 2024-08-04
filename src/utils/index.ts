@@ -21,9 +21,11 @@ export * from "./clients/updateClientById";
 
 // ORDERS
 export * from "./orders/createOrder";
+export * from "./orders/deleteOrderById";
 export * from "./orders/findManyOrders";
 export * from "./orders/findOrderById";
 
 // ORDERS ON STOCKS
+export * from "./ordersOnStoks/deleteOrderOnStock";
 export * from "./ordersOnStoks/findAllOrdersOnStocks";
 export * from "./ordersOnStoks/findManyOrdersOnStocks";

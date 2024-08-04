@@ -1,7 +1,15 @@
 import { Request, Response } from "express";
 import { redisClient } from "../redisConfig";
-import { createOrder, findManyProducts, getClientByNameOrId } from "../utils";
+import {
+  createOrder,
+  deleteOrderById,
+  deleteOrderOnStock,
+  findManyProducts,
+  getClientByNameOrId,
+} from "../utils";
 import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
+
+findAndKeepOrders();
 
 //
 // ---------------- CREATE ORDER ----------------
@@ -80,8 +88,16 @@ export const getOneOrder = async (req: Request, res: Response) => {
     if (allOrders) {
       const parseAllOrders: Array<{
         id: number;
-        client: any;
-        products: any[];
+        client: {
+          id: number;
+          nome: string;
+        };
+        products: {
+          id: number;
+          name: string;
+          preco: number;
+          quantity: number;
+        }[];
       }> = await JSON.parse(allOrders);
       const orderMap = new Map(
         parseAllOrders.map((order) => [order.id, order])
@@ -99,3 +115,51 @@ export const getOneOrder = async (req: Request, res: Response) => {
     res.status(400).json(error);
   }
 };
+
+//
+// ---------------- DELETE ORDER ----------------
+//
+
+export const deleteOrder = async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const clientInstance = await redisClient;
+
+  try {
+    const allOrders = await clientInstance.get("allOrders");
+    if (allOrders) {
+      const parseAllOrders: {
+        id: number;
+        client: { id: number; nome: string };
+        products: {
+          id: number;
+          name: string;
+          preco: number;
+          quantity: number;
+        }[];
+      }[] = await JSON.parse(allOrders);
+      const orderMap = new Map(
+        parseAllOrders.map((order) => [order.id, order])
+      );
+      const order = orderMap.get(Number(orderId));
+      if (order) {
+        await Promise.all([
+          deleteOrderById(Number(orderId)),
+          deleteOrderOnStock(Number(orderId)),
+          clientInstance.del("allOrders"),
+          clientInstance.del("oneOrder"),
+        ]);
+
+        await findAndKeepOrders();
+        return res
+          .status(201)
+          .json(`Order by id:${orderId} deleted successfully`);
+      }
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//
+// ---------------- UPDATE ORDER ----------------
+//
