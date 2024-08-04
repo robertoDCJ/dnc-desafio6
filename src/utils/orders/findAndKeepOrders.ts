@@ -1,21 +1,11 @@
-import { createClient } from "redis";
+import { redisClient } from "../../redisConfig";
 import { getClients } from "../clients/getClients";
 import { findAllOrdersOnStocks } from "../ordersOnStoks/findAllOrdersOnStocks";
 import { findAllProducts } from "../product/findAllProducts";
 import { findManyOrders } from "./findManyOrders";
 
-const client = createClient({
-  password: "wyCfJNs2GVmPqkjox3qz8bffj2vZZnzE",
-  socket: {
-    host: "redis-15074.c98.us-east-1-4.ec2.redns.redis-cloud.com",
-    port: 15074,
-  },
-})
-  .on("error", (err) => console.log("Redis Client Error", err))
-  .connect();
-
 export const findAndKeepOrders = async () => {
-  const clientInstance = await client;
+  const clientInstance = await redisClient;
 
   const [orders, ordersOnStocks, clients, products] = await Promise.all([
     findManyOrders(),

@@ -1,24 +1,14 @@
 import { Request, Response } from "express";
-import { createClient } from "redis";
+import { redisClient } from "../redisConfig";
 import { createOrder, findManyProducts, getClientByNameOrId } from "../utils";
 import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
-
-const client = createClient({
-  password: "wyCfJNs2GVmPqkjox3qz8bffj2vZZnzE",
-  socket: {
-    host: "redis-15074.c98.us-east-1-4.ec2.redns.redis-cloud.com",
-    port: 15074,
-  },
-})
-  .on("error", (err) => console.log("Redis Client Error", err))
-  .connect();
 
 //
 // ---------------- CREATE ORDER ----------------
 //
 
 export const postOrder = async (req: Request, res: Response) => {
-  const clientInstance = await client;
+  const clientInstance = await redisClient;
 
   try {
     const {
@@ -55,7 +45,7 @@ export const postOrder = async (req: Request, res: Response) => {
 
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    const clientInstance = await client;
+    const clientInstance = await redisClient;
     const verifyOrders = await clientInstance.get("allOrders");
     if (verifyOrders) {
       return res.status(200).json(JSON.parse(verifyOrders));
@@ -75,7 +65,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
 export const getOneOrder = async (req: Request, res: Response) => {
   const { orderId } = req.params;
-  const clientInstance = await client;
+  const clientInstance = await redisClient;
 
   try {
     const jsonOrder = await clientInstance.get("oneOrder");
@@ -103,6 +93,8 @@ export const getOneOrder = async (req: Request, res: Response) => {
         return res.status(200).json(order);
       }
     }
+
+    res.status(404).json({ message: "Order not found" });
   } catch (error) {
     res.status(400).json(error);
   }
