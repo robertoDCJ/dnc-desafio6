@@ -8,6 +8,7 @@ export * from "./product/showProducts";
 export * from "./product/updateOneProduct";
 
 // STOCKS
+export * from "./stocks/findAndKeepStocks";
 export * from "./stocks/findUniqueStock";
 export * from "./stocks/showStocks";
 export * from "./stocks/updateStockById";
@@ -22,10 +23,13 @@ export * from "./clients/updateClientById";
 // ORDERS
 export * from "./orders/createOrder";
 export * from "./orders/deleteOrderById";
+export * from "./orders/findAndKeepOrders";
 export * from "./orders/findManyOrders";
 export * from "./orders/findOrderById";
 
 // ORDERS ON STOCKS
+export * from "./ordersOnStoks/createManyOrdersOnStocks";
+export * from "./ordersOnStoks/deleteManyOrdersOnStocks";
 export * from "./ordersOnStoks/deleteOrderOnStock";
 export * from "./ordersOnStoks/findAllOrdersOnStocks";
 export * from "./ordersOnStoks/findManyOrdersOnStocks";

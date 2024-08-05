@@ -2,14 +2,16 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { redisClient } from "../redisConfig";
 import {
+  createManyOrdersOnStocks,
   createOrder,
+  deleteManyOrdersOnStocks,
   deleteOrderById,
   deleteOrderOnStock,
+  findAndKeepOrders,
+  findAndKeepStocks,
   findManyProducts,
   getClientByNameOrId,
 } from "../utils";
-import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
-import { findAndKeepStocks } from "../utils/stocks/findAndKeepStocks";
 
 const prisma = new PrismaClient();
 
@@ -285,19 +287,8 @@ export const updateOrder = async (req: Request, res: Response) => {
           ]);
 
           await clientInstance.del(["allOrders", "oneOrder"]);
-          await prisma.pedidosOnEstoques.deleteMany({
-            where: {
-              pedido_id: Number(orderId),
-            },
-          });
-          await prisma.pedidosOnEstoques.createMany({
-            data: estoqueId.map((id, index) => ({
-              pedido_id: Number(orderId),
-              estoque_id: id,
-              quantidade: quantity[index],
-            })),
-          });
-
+          await deleteManyOrdersOnStocks(Number(orderId));
+          await createManyOrdersOnStocks(Number(orderId), estoqueId, quantity);
           await findAndKeepOrders();
           return res.status(201).json("Order updated successfully");
         }
