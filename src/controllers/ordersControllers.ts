@@ -9,10 +9,12 @@ import {
   getClientByNameOrId,
 } from "../utils";
 import { findAndKeepOrders } from "../utils/orders/findAndKeepOrders";
+import { findAndKeepStocks } from "../utils/stocks/findAndKeepStocks";
 
 const prisma = new PrismaClient();
 
 findAndKeepOrders();
+findAndKeepStocks();
 
 //
 // ---------------- CREATE ORDER ----------------
@@ -31,6 +33,30 @@ export const postOrder = async (req: Request, res: Response) => {
     } = req.body;
 
     await clientInstance.del("allOrders");
+
+    // Verify if there are enough products in stock
+    const allStocks = await clientInstance.get("allStocks");
+    if (allStocks) {
+      const parseAllStocks: { id: number; quantidade: number; nome: string }[] =
+        await JSON.parse(allStocks);
+      const stockMap = new Map(
+        parseAllStocks.map((stock) => [stock.id, stock])
+      );
+
+      const verifyStocks = products_id.map((product) => {
+        const stock = stockMap.get(product.id);
+        if (stock) {
+          if (stock.quantidade < product.quantidade) {
+            return false;
+          }
+          return true;
+        }
+      });
+
+      if (verifyStocks.includes(false)) {
+        return res.status(400).json("Quantidade de estoque insuficiente!");
+      }
+    }
 
     const [products, client] = await Promise.all(
       await [
@@ -196,6 +222,31 @@ export const updateOrder = async (req: Request, res: Response) => {
   const clientInstance = await redisClient;
 
   try {
+    // Verify if there are enough products in stock
+    const allStocks = await clientInstance.get("allStocks");
+    if (allStocks) {
+      const parseAllStocks: { id: number; quantidade: number; nome: string }[] =
+        await JSON.parse(allStocks);
+      const stockMap = new Map(
+        parseAllStocks.map((stock) => [stock.id, stock])
+      );
+      if (products) {
+        const verifyStocks = products.map((product) => {
+          const stock = stockMap.get(product.id);
+          if (stock) {
+            if (stock.quantidade < product.quantity) {
+              return false;
+            }
+            return true;
+          }
+        });
+
+        if (verifyStocks.includes(false)) {
+          return res.status(400).json("Quantidade de estoque insuficiente!");
+        }
+      }
+    }
+
     const allOrders = await clientInstance.get("allOrders");
     if (allOrders) {
       const parseAllOrders: {
