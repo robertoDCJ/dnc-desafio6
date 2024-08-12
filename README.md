@@ -7,6 +7,8 @@ A imagem abaixo é referente a modelagem de dados para este projeto.
 
 ## Insomnia
 
-Para facilitar, há um arquivo JSON chamado "Insomnia_2024-08-11.json", que pode ser importado no insomnia para obter todas as rotas para os testes.
+Para facilitar, há um arquivo JSON chamado "Insomnia_2024-08-12.json", que pode ser importado no insomnia para obter todas as rotas para os testes.
 
-## Rodando o projeto
+## Deploy
+
+Fiz o deploy da api na Vercel, segue o link: <a href="https://dnc-desafio6.vercel.app/">Click aqui para abrir no navegador</a>
