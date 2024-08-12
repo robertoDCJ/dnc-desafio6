@@ -9,8 +9,6 @@ const router = Router();
 
 router.get("/", getAllSelling);
 router.post("/", createSelling);
-router.get("/:id");
 router.delete("/:id", deleteSelling);
-router.put("/:id");
 
 export default router;
