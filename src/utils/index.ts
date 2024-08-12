@@ -33,3 +33,6 @@ export * from "./ordersOnStoks/deleteManyOrdersOnStocks";
 export * from "./ordersOnStoks/deleteOrderOnStock";
 export * from "./ordersOnStoks/findAllOrdersOnStocks";
 export * from "./ordersOnStoks/findManyOrdersOnStocks";
+
+// SELLING
+export * from "./selling/findAndKeepSelling";

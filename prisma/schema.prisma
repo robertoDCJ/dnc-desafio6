@@ -14,26 +14,26 @@ datasource db {
 }
 
 model Produtos {
-  id                Int @id @unique @default(autoincrement())
-  nome              String @unique
-  preco             Int @default(0)
+  id                Int       @id @unique @default(autoincrement())
+  nome              String    @unique
+  preco             Int       @default(0)
   }
 
 model Clientes {
-  id                Int @id @unique @default(autoincrement())
-  nome              String @unique
+  id                Int       @id @unique @default(autoincrement())
+  nome              String    @unique
   pedidos           Pedidos[]
 }
 model Estoques {
-  id                Int @id @unique @default(autoincrement())
-  quantidade        Int? @default(0)
+  id                Int       @id @unique @default(autoincrement())
+  quantidade        Int?      @default(0)
   pedidos           PedidosOnEstoques[]
 }
 
 model Pedidos {
-  id                Int @id @unique @default(autoincrement())
+  id                Int       @id @unique @default(autoincrement())
   estoques          PedidosOnEstoques[]
-  cliente           Clientes @relation(fields: [cliente_id], references: [id])
+  cliente           Clientes  @relation(fields: [cliente_id], references: [id])
   cliente_id        Int
   vendas            Vendas?
 }
@@ -48,7 +48,9 @@ model PedidosOnEstoques {
 }
 
 model Vendas {
-  id                Int @id @unique @default(autoincrement())
-  pedido            Pedidos @relation(fields: [pedido_id], references: [id])
-  pedido_id         Int @unique
+  id                Int       @id @unique @default(autoincrement())
+  pedido            Pedidos   @relation(fields: [pedido_id], references: [id])
+  pedido_id         Int       @unique
+  valor_total       Int
+  data              DateTime
 }
